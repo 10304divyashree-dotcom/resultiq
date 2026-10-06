@@ -17,11 +17,24 @@
 
       <div class="form-group">
         <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" name="password" class="form-input"
-               required autocomplete="current-password" placeholder="••••••••">
+        <div style="position: relative;">
+          <input type="password" id="password" name="password" class="form-input"
+                 required autocomplete="current-password" placeholder="••••••••" style="padding-right: 40px;">
+          <button type="button" class="btn-clear" onclick="togglePassword('password', 'eye-icon-login')" 
+                  style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);" title="Toggle Password Visibility">
+            <span id="eye-icon-login">👁️</span>
+          </button>
+        </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem;">
+      <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;margin:0.25rem 0 0.75rem 0;">
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;color:var(--text-muted,#64748B);margin-bottom:0;font-weight:400;">
+          <input type="checkbox" id="remember" name="remember" checked style="width:16px;height:16px;accent-color:var(--color-primary);cursor:pointer;">
+          Remember me on this device
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.25rem;">
         Sign In →
       </button>
     </form>
@@ -32,4 +45,20 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🔒';
+    } else {
+        input.type = 'password';
+        icon.textContent = '👁️';
+    }
+}
+</script>
 {% endblock %}

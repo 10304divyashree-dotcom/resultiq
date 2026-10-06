@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy import func
 from models import db, User, Report
 
 auth_bp = Blueprint('auth', __name__)
@@ -10,13 +11,13 @@ def register():
         return redirect(url_for('auth.dashboard'))
         
     if request.method == 'POST':
-        name = request.form.get('name')
+        name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip().lower()
         username = request.form.get('username', '').strip().lower()
-        department = request.form.get('department')
-        designation = request.form.get('designation')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        department = request.form.get('department', '').strip()
+        designation = request.form.get('designation', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
 
         if not all([name, email, username, password, confirm_password]):
             flash('All fields are required.', 'danger')
@@ -26,12 +27,32 @@ def register():
             flash('Passwords do not match.', 'danger')
             return redirect(url_for('auth.register'))
 
-        existing_email = User.query.filter_by(email=email).first()
-        if existing_email:
-            flash('Email already registered.', 'danger')
+        import re
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long.', 'danger')
+            return redirect(url_for('auth.register'))
+        if not re.search(r'[A-Z]', password):
+            flash('Password must contain at least 1 uppercase letter.', 'danger')
+            return redirect(url_for('auth.register'))
+        if not re.search(r'[a-z]', password):
+            flash('Password must contain at least 1 lowercase letter.', 'danger')
+            return redirect(url_for('auth.register'))
+        if not re.search(r'[0-9]', password):
+            flash('Password must contain at least 1 number.', 'danger')
+            return redirect(url_for('auth.register'))
+        if not re.search(r'[^A-Za-z0-9\s]', password):
+            flash('Password must contain at least 1 special character.', 'danger')
+            return redirect(url_for('auth.register'))
+        if ' ' in password:
+            flash('Password should not contain spaces.', 'danger')
             return redirect(url_for('auth.register'))
 
-        existing_user = User.query.filter_by(username=username).first()
+        existing_email = User.query.filter(func.lower(User.email) == email).first()
+        if existing_email:
+            flash('Email already registered. Please sign in.', 'danger')
+            return redirect(url_for('auth.login'))
+
+        existing_user = User.query.filter(func.lower(User.username) == username).first()
         if existing_user:
             flash('Username already taken.', 'danger')
             return redirect(url_for('auth.register'))
@@ -62,28 +83,44 @@ def login():
         return redirect(url_for('auth.dashboard'))
         
     if request.method == 'POST':
-        login_id = request.form.get('login_id', '').strip().lower() # Can be email or username
-        password = request.form.get('password')
+        login_id = request.form.get('login_id', '').strip().lower()  # Can be email or username
+        password = request.form.get('password', '')
+        remember = request.form.get('remember', 'on') in ('on', 'true', '1')
 
         if not login_id or not password:
             flash('Please provide both username/email and password.', 'danger')
             return redirect(url_for('auth.login'))
 
-        user = User.query.filter((User.email == login_id) | (User.username == login_id)).first()
+        user = User.query.filter(
+            (func.lower(User.email) == login_id) | 
+            (func.lower(User.username) == login_id)
+        ).first()
 
-        if user and user.check_password(password):
-            login_user(user)
+        password_matches = False
+        if user:
+            # Check exact password first; fallback to stripped password if user accidentally included extra spaces
+            password_matches = user.check_password(password) or (
+                bool(password.strip()) and user.check_password(password.strip())
+            )
+
+        if user and password_matches:
+            # Mark session as permanent to keep user logged in across app switches and browser sessions
+            session.permanent = True
+            login_user(user, remember=remember)
             flash('Logged in successfully.', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('auth.dashboard'))
+        elif not user:
+            flash('No registered account found with that email or username. Please check your spelling or register an account.', 'danger')
         else:
-            flash('Invalid username/email or password.', 'danger')
+            flash('Incorrect password. Please verify and try again.', 'danger')
 
     return render_template('auth/login.html')
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    session.clear()
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))

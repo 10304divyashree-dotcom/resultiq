@@ -44,14 +44,39 @@
       <div class="form-row">
         <div class="form-group">
           <label for="password" class="form-label">Password *</label>
-          <input type="password" id="password" name="password" class="form-input"
-                 required autocomplete="new-password" placeholder="••••••••">
+          <div style="position: relative;">
+            <input type="password" id="password" name="password" class="form-input"
+                   required autocomplete="new-password" placeholder="••••••••" style="padding-right: 40px;" oninput="validatePassword()">
+            <button type="button" class="btn-clear" onclick="togglePassword('password', 'eye-icon-reg')" 
+                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);" title="Toggle Password Visibility">
+              <span id="eye-icon-reg">👁️</span>
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label for="confirm_password" class="form-label">Confirm Password *</label>
-          <input type="password" id="confirm_password" name="confirm_password" class="form-input"
-                 required autocomplete="new-password" placeholder="••••••••">
+          <div style="position: relative;">
+            <input type="password" id="confirm_password" name="confirm_password" class="form-input"
+                   required autocomplete="new-password" placeholder="••••••••" style="padding-right: 40px;" oninput="validatePassword()">
+            <button type="button" class="btn-clear" onclick="togglePassword('confirm_password', 'eye-icon-confirm')" 
+                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);" title="Toggle Password Visibility">
+              <span id="eye-icon-confirm">👁️</span>
+            </button>
+          </div>
         </div>
+      </div>
+      
+      <div class="password-conditions" style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.25rem; background: var(--color-bg); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+          <p style="margin-bottom: 0.75rem; font-weight: 600; color: var(--color-text);">Password Requirements:</p>
+          <ul style="list-style-type: none; padding-left: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <li id="cond-length" style="color: var(--color-danger);">❌ Minimum 8 characters</li>
+              <li id="cond-upper" style="color: var(--color-danger);">❌ 1 uppercase letter</li>
+              <li id="cond-lower" style="color: var(--color-danger);">❌ 1 lowercase letter</li>
+              <li id="cond-number" style="color: var(--color-danger);">❌ 1 number</li>
+              <li id="cond-special" style="color: var(--color-danger);">❌ 1 special character</li>
+              <li id="cond-nospace" style="color: var(--color-danger);">❌ No spaces allowed</li>
+              <li id="cond-match" style="grid-column: 1 / -1; color: var(--color-danger);">❌ Passwords match</li>
+          </ul>
       </div>
 
       <button type="submit" class="btn btn-primary"
@@ -66,4 +91,45 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🔒';
+    } else {
+        input.type = 'password';
+        icon.textContent = '👁️';
+    }
+}
+
+function validatePassword() {
+    const pass = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    
+    const updateCond = (id, condition) => {
+        const el = document.getElementById(id);
+        const text = el.innerText.substring(2);
+        if (condition) {
+            el.innerText = '✅ ' + text;
+            el.style.color = 'var(--color-success)';
+        } else {
+            el.innerText = '❌ ' + text;
+            el.style.color = 'var(--color-danger)';
+        }
+    };
+    
+    updateCond('cond-length', pass.length >= 8);
+    updateCond('cond-upper', /[A-Z]/.test(pass));
+    updateCond('cond-lower', /[a-z]/.test(pass));
+    updateCond('cond-number', /[0-9]/.test(pass));
+    updateCond('cond-special', /[^A-Za-z0-9\s]/.test(pass));
+    updateCond('cond-nospace', pass.length > 0 && !/\s/.test(pass));
+    updateCond('cond-match', pass.length > 0 && pass === confirm);
+}
+</script>
 {% endblock %}

@@ -163,12 +163,20 @@ def generate():
         current_app.logger.error(f'Report finalise DB error: {exc}')
         # Report file was created — still redirect to preview
 
-    flash(
-        f'Report generated successfully! '
-        f'{stats["pass_count"]} of {stats["total_students"]} students passed '
-        f'({stats["pass_rate"]}%).',
-        'success'
-    )
+    if stats.get('absent', 0) > 0:
+        flash(
+            f'Report generated successfully! '
+            f'{stats["pass_count"]} of {stats["appeared"]} appeared students passed '
+            f'({stats["pass_rate"]}%) [{stats["absent"]} absent of {stats["total_students"]} total].',
+            'success'
+        )
+    else:
+        flash(
+            f'Report generated successfully! '
+            f'{stats["pass_count"]} of {stats["total_students"]} students passed '
+            f'({stats["pass_rate"]}%).',
+            'success'
+        )
     return redirect(url_for('report.preview', report_id=report_record.id))
 
 

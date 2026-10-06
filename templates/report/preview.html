@@ -70,38 +70,50 @@
   <div class="stat-card">
     <div class="stat-label">Total Students</div>
     <div class="stat-value">{{ stats.total_students }}</div>
-    <div class="stat-note">Records processed</div>
+    <div class="stat-note">
+      {% if stats.absent and stats.absent > 0 %}
+        {{ stats.appeared }} appeared · {{ stats.absent }} absent
+      {% else %}
+        Records processed
+      {% endif %}
+    </div>
   </div>
 
   <div class="stat-card stat-pass">
     <div class="stat-label">Passed</div>
     <div class="stat-value" style="color:var(--color-success);">{{ stats.pass_count }}</div>
-    <div class="stat-note">{{ stats.pass_rate }}% pass rate</div>
+    <div class="stat-note">
+      {{ stats.pass_rate }}% {% if stats.absent and stats.absent > 0 %}of appeared{% else %}pass rate{% endif %}
+    </div>
   </div>
 
   <div class="stat-card stat-fail">
     <div class="stat-label">Failed</div>
     <div class="stat-value" style="color:var(--color-danger);">{{ stats.fail_count }}</div>
     <div class="stat-note">
-      {{ ((stats.fail_count / stats.total_students * 100) | round(1)) if stats.total_students else 0 }}% fail rate
+      {% if stats.appeared and stats.appeared > 0 %}
+        {{ ((stats.fail_count / stats.appeared * 100) | round(1)) }}% {% if stats.absent and stats.absent > 0 %}of appeared{% else %}fail rate{% endif %}
+      {% else %}
+        0% fail rate
+      {% endif %}
     </div>
   </div>
 
   <div class="stat-card stat-avg">
     <div class="stat-label">Avg Percentage</div>
-    <div class="stat-value" style="color:#C4B5FD;">{{ stats.avg_percentage }}%</div>
+    <div class="stat-value" style="color:#0F766E;">{{ stats.avg_percentage }}%</div>
     <div class="stat-note">Class average</div>
   </div>
 
   <div class="stat-card stat-high">
     <div class="stat-label">Highest</div>
-    <div class="stat-value" style="color:#FCD34D;">{{ stats.highest_pct }}%</div>
+    <div class="stat-value" style="color:#D97706;">{{ stats.highest_pct }}%</div>
     <div class="stat-note">Best performer</div>
   </div>
 
   <div class="stat-card stat-low">
     <div class="stat-label">Lowest</div>
-    <div class="stat-value" style="color:#F472B6;">{{ stats.lowest_pct }}%</div>
+    <div class="stat-value" style="color:#DC2626;">{{ stats.lowest_pct }}%</div>
     <div class="stat-note">Needs attention</div>
   </div>
 
@@ -115,7 +127,7 @@
   </div>
   <div style="height:10px;background:var(--color-surface-2);border-radius:5px;overflow:hidden;">
     {% set pass_w = stats.pass_rate %}
-    <div style="height:100%;width:{{ pass_w }}%;background:linear-gradient(90deg,#059669,#10B981);border-radius:5px;transition:width .8s ease;"
+    <div style="height:100%;width:{{ pass_w }}%;background:linear-gradient(90deg,#15803d,#16A34A);border-radius:5px;transition:width .8s ease;"
          title="{{ pass_w }}% passed"></div>
   </div>
 </div>
@@ -151,7 +163,7 @@
           {% elif col == 'Percentage' %}
             <span title="(Total / max possible) × 100" style="cursor:help;opacity:.6;font-size:.85em;">ℹ</span>
           {% elif col == 'Result' %}
-            <span title="PASS if % ≥ 40 and no subject below 35%" style="cursor:help;opacity:.6;font-size:.85em;">ℹ</span>
+            <span title="PASS if overall % ≥ 40% and each subject ≥ 50%" style="cursor:help;opacity:.6;font-size:.85em;">ℹ</span>
           {% endif %}
         </th>
         {% endfor %}
@@ -214,7 +226,7 @@
     {% endfor %}
   </div>
   <p class="text-muted mt-2" style="font-size:.8rem;">
-    Pass criteria: Overall ≥ 40% · Each subject ≥ 35% · Max marks per subject = 100
+    Pass criteria: Overall ≥ 40% · Each subject ≥ 50% · Max marks per subject = 100
   </p>
 </div>
 {% endif %}

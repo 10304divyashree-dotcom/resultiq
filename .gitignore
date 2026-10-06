@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+env/
+venv/
+ENV/
+
+# Databases
+test_resultiq.db
+*.sqlite3
+
+# Uploads and temporary reports generated during development
+scratch/
+reports/TEST_*
+
+# IDEs
+.vscode/
+.idea/
+
+uploads/
+reports/
+*.db
+resultiq.db

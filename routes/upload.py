@@ -131,10 +131,29 @@ def upload():
         # --- Save securely ---
         original_filename = secure_filename(file.filename)
         ext = original_filename.rsplit('.', 1)[1].lower()
-        stored_filename = f"{uuid.uuid4().hex}.{ext}"
         upload_folder = current_app.config['UPLOAD_FOLDER']
-        filepath = os.path.join(upload_folder, stored_filename)
-        file.save(filepath)
+
+        if ext == 'xls':
+            temp_xls_filename = f"{uuid.uuid4().hex}.xls"
+            temp_xls_path = os.path.join(upload_folder, temp_xls_filename)
+            file.save(temp_xls_path)
+
+            stored_filename = f"{uuid.uuid4().hex}.xlsx"
+            filepath = os.path.join(upload_folder, stored_filename)
+            try:
+                from services.reporter import convert_xls_to_xlsx
+                convert_xls_to_xlsx(temp_xls_path, filepath)
+            finally:
+                if os.path.exists(temp_xls_path):
+                    try:
+                        os.remove(temp_xls_path)
+                    except OSError:
+                        pass
+            file_size = os.path.getsize(filepath)
+        else:
+            stored_filename = f"{uuid.uuid4().hex}.{ext}"
+            filepath = os.path.join(upload_folder, stored_filename)
+            file.save(filepath)
 
         # --- Inspect workbook ---
         try:
