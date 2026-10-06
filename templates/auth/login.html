@@ -8,7 +8,7 @@
     <h1 class="auth-title">Welcome back</h1>
     <p class="auth-subtitle">Sign in to your ResultIQ account</p>
 
-    <form method="POST" action="{{ url_for('auth.login') }}">
+    <form method="POST" action="{{ url_for('auth.login') }}" id="login-form">
       <div class="form-group">
         <label for="login_id" class="form-label">Email or Username</label>
         <input type="text" id="login_id" name="login_id" class="form-input"
@@ -21,8 +21,10 @@
           <input type="password" id="password" name="password" class="form-input"
                  required autocomplete="current-password" placeholder="••••••••" style="padding-right: 40px;">
           <button type="button" class="btn-clear" onclick="togglePassword('password', 'eye-icon-login')" 
-                  style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);" title="Toggle Password Visibility">
-            <span id="eye-icon-login">👁️</span>
+                  style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);" title="Toggle Password Visibility">
+            <span id="eye-icon-login">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
           </button>
         </div>
       </div>
@@ -34,7 +36,7 @@
         </label>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.25rem;">
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.25rem;" id="login-btn">
         Sign In →
       </button>
     </form>
@@ -52,13 +54,42 @@
 function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
+    
+    const eyeSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    const eyeOffSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
     if (input.type === 'password') {
         input.type = 'text';
-        icon.textContent = '🔒';
+        icon.innerHTML = eyeOffSvg;
     } else {
         input.type = 'password';
-        icon.textContent = '👁️';
+        icon.innerHTML = eyeSvg;
     }
+}
+
+// Add loading spinner on form submit
+const loginForm = document.getElementById('login-form');
+const loginBtn = document.getElementById('login-btn');
+if (loginForm && loginBtn) {
+    loginForm.addEventListener('submit', function(e) {
+        if (loginBtn.classList.contains('is-loading')) {
+            e.preventDefault();
+            return;
+        }
+        
+        loginBtn.classList.add('is-loading');
+        loginBtn.style.opacity = '0.8';
+        loginBtn.style.cursor = 'wait';
+        loginBtn.style.pointerEvents = 'none';
+        
+        loginBtn.innerHTML = `
+            <svg class="spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.25"></circle>
+              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Processing...
+        `;
+    });
 }
 </script>
 {% endblock %}

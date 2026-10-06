@@ -143,6 +143,28 @@
     dropZone.addEventListener('click', function (e) {
         if (e.target.tagName !== 'LABEL') fileInput.click();
     });
+
+    // Add loading spinner on form submit
+    const uploadForm = document.getElementById('upload-form');
+    uploadForm.addEventListener('submit', function(e) {
+        if (submitBtn.classList.contains('is-loading')) {
+            e.preventDefault();
+            return;
+        }
+        
+        submitBtn.classList.add('is-loading');
+        submitBtn.style.opacity = '0.8';
+        submitBtn.style.cursor = 'wait';
+        submitBtn.style.pointerEvents = 'none';
+        
+        submitBtn.innerHTML = `
+            <svg class="spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.25"></circle>
+              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Uploading...
+        `;
+    });
 })();
 </script>
 {% endblock %}
