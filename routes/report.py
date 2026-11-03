@@ -215,9 +215,24 @@ def preview(report_id: str):
         df = pd.read_excel(report.report_path, sheet_name=report.sheet_name,
                            header=header_idx, engine='openpyxl')
         table_cols = list(df.columns)
+        
+        # Since the header row might contain actual data values, we assume S.No is the first column (index 0)
+        sno_idx = 0
+
         # Replace NaN with blank for display
         df = df.fillna('')
-        table_rows = df.values.tolist()
+        raw_rows = df.values.tolist()
+        table_rows = []
+        for row_idx, row in enumerate(raw_rows):
+            cleaned_row = []
+            for i, item in enumerate(row):
+                if i == sno_idx:
+                    cleaned_row.append(row_idx + 1)
+                elif isinstance(item, float) and item.is_integer():
+                    cleaned_row.append(int(item))
+                else:
+                    cleaned_row.append(item)
+            table_rows.append(cleaned_row)
     except Exception as exc:
         read_error = str(exc)
         current_app.logger.error(f'Preview read error for {report_id}: {exc}')

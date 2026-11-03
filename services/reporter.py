@@ -474,6 +474,8 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
                 cell.alignment = _CENTER
                 if not cell.font or cell.font.name != 'Arial':
                     cell.font = body_font
+                if c in identity_col_indices and isinstance(cell.value, (int, float)):
+                    cell.number_format = '0'
 
     # Native Excel conditional formatting rules
     if marks_col_indices:
@@ -497,8 +499,11 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
     LABEL_COL = name_col_idx
     row_labels = [
         'appeared',
+        'absent',
         'passed',
+        'failed (below 50%)',
         '% passed',
+        '% passed (on total strength)',
         'below 50%',
         '50%-60%',
         '61%-70%',
@@ -539,10 +544,18 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
                 cell.alignment = _CENTER
         lc = ws.cell(row=current_row, column=LABEL_COL, value=label)
         lc.border = border
-        lc.font = body_font
+        if any(k in label for k in ('passed', 'appeared', 'absent', 'failed')):
+            lc.font = Font(name='Arial', size=11, bold=True)
+        else:
+            lc.font = body_font
         lc.alignment = _LEFT
 
     # -- 5. Write Excel formulas and precomputed cached values --
+    appeared_row = start_row
+    absent_row   = start_row + 1
+    passed_row   = start_row + 2
+    failed_row   = start_row + 3
+
     for col_name in per_column_stats:
         if col_name not in col_map:
             continue
@@ -551,13 +564,13 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
         data_start = first_data_row
         rng = f"{col_letter}{data_start}:{col_letter}{last_data_row}"
 
-        appeared_row = start_row
-        passed_row   = start_row + 1
-
         col_values = [
             f'={n_data_rows}-COUNTIF({rng},"aa")',
+            f'=COUNTIF({rng},"aa")',
             f'=COUNTIF({rng},">=50")',
+            f'=COUNTIF({rng},"<50")',
             f'={col_letter}{passed_row}/{col_letter}{appeared_row}*100',
+            f'={col_letter}{passed_row}/{n_data_rows}*100',
             f'=COUNTIF({rng},"<50")',
             f'=COUNTIFS({rng},">=50",{rng},"<=60")',
             f'=COUNTIFS({rng},">=61",{rng},"<=70")',
@@ -568,14 +581,20 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
 
         col_stat = per_column_stats.get(col_name, {})
         appeared_val = col_stat.get('appeared', 0)
+        absent_val   = col_stat.get('absent', 0)
         passed_val   = col_stat.get('pass_count', 0)
+        failed_val   = col_stat.get('fail_count', 0)
         pass_rate    = round(col_stat.get('pass_rate', 0.0), 1)
+        overall_rate = round(col_stat.get('overall_pass_rate', 0.0), 1)
         bins         = col_stat.get('bins', {})
 
         cached_values = [
             appeared_val,
+            absent_val,
             passed_val,
+            failed_val,
             pass_rate,
+            overall_rate,
             bins.get('below 50%', 0),
             bins.get('50%-60%', 0),
             bins.get('61%-70%', 0),
@@ -587,9 +606,12 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
         for i, (formula, val) in enumerate(zip(col_values, cached_values)):
             cell = ws.cell(row=start_row + i, column=c_idx, value=formula)
             cell.border = border
-            cell.font = body_font
+            if any(k in row_labels[i] for k in ('passed', 'appeared', 'absent', 'failed')):
+                cell.font = Font(name='Arial', size=11, bold=True)
+            else:
+                cell.font = body_font
             cell.alignment = _CENTER
-            if i == 2:  # '% passed'
+            if i in (4, 5):  # '% passed'
                 cell.number_format = '0.0'
             else:
                 cell.number_format = '0'
@@ -628,11 +650,13 @@ def _append_per_column_analysis(ws, per_column_stats, header_row_1based=None):
 def _compute_results_per_column(df: pd.DataFrame, marks_cols: list[str]) -> dict:
     """Compute statistics for each marks column individually."""
     stats_by_col = {}
+    total_students = len(df)
     for col in marks_cols:
         num_col = df[col].apply(_to_numeric)
         
         appeared_mask = num_col.notna()
         appeared = int(appeared_mask.sum())
+        absent = total_students - appeared
         
         passes = 0
         fails = 0
@@ -663,12 +687,16 @@ def _compute_results_per_column(df: pd.DataFrame, marks_cols: list[str]) -> dict
                 bins['91%-100%'] += 1
                 
         pass_rate = round((passes / appeared * 100), 2) if appeared > 0 else 0.0
+        overall_pass_rate = round((passes / total_students * 100), 2) if total_students > 0 else 0.0
         
         stats_by_col[col] = {
+            'total_students': total_students,
             'appeared': appeared,
+            'absent': absent,
             'pass_count': passes,
             'fail_count': fails,
             'pass_rate': pass_rate,
+            'overall_pass_rate': overall_pass_rate,
             'bins': bins
         }
     return stats_by_col
@@ -833,6 +861,122 @@ def convert_xls_to_xlsx(xls_path: str, xlsx_path: str) -> str:
     return xlsx_path
 
 
+def _append_passed_students_sheet(
+    wb: openpyxl.Workbook,
+    source_ws,
+    df_result: pd.DataFrame,
+    marks_cols: list[str],
+    header_row_1based: int = 1
+):
+    """
+    Append a 'Passed Students Only' worksheet to the workbook.
+    This sheet filters out all students who failed (< 50) or were absent (AA)
+    in any marks column, showing only students who achieved PASS.
+    """
+    if df_result is None or df_result.empty or 'Result' not in df_result.columns:
+        return
+
+    passed_df = df_result[df_result['Result'] == 'PASS'].copy()
+    
+    sheet_title = "Passed Students Only"
+    if sheet_title in wb.sheetnames:
+        del wb[sheet_title]
+        
+    ws_passed = wb.create_sheet(title=sheet_title)
+    
+    border = _thick_border()
+    header_fill = PatternFill('solid', fgColor='DCE775')  # light green tint
+    header_font = Font(name='Arial', size=12, bold=True)
+    body_font = Font(name='Arial', size=11)
+    bold_font = Font(name='Arial', size=11, bold=True)
+    
+    max_col = source_ws.max_column
+    
+    # 1. Copy banner if present
+    if header_row_1based > 1:
+        v1 = source_ws.cell(row=1, column=1).value
+        if v1:
+            ws_passed.cell(row=1, column=1, value=v1)
+            ws_passed.cell(row=1, column=1).font = Font(name='Times New Roman', size=12, bold=False)
+            ws_passed.cell(row=1, column=1).alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            ws_passed.row_dimensions[1].height = 56.0
+            ws_passed.merge_cells(start_row=1, start_column=1, end_row=1, end_column=max_col)
+            
+        # Title row 2
+        ws_passed.cell(row=2, column=1, value="List of Passed Students (Failed & Absent Excluded)")
+        ws_passed.cell(row=2, column=1).font = Font(name='Arial', size=12, bold=True, color='1E40AF')
+        ws_passed.cell(row=2, column=1).alignment = _CENTER
+        ws_passed.row_dimensions[2].height = 35.5
+        ws_passed.merge_cells(start_row=2, start_column=1, end_row=2, end_column=max_col)
+        
+    # 2. Copy header row
+    h_row = header_row_1based if header_row_1based > 0 else 1
+    ws_passed.row_dimensions[h_row].height = 37.25
+    for c in range(1, max_col + 1):
+        cell_src = source_ws.cell(row=h_row, column=c)
+        cell_dest = ws_passed.cell(row=h_row, column=c, value=cell_src.value)
+        cell_dest.fill = header_fill
+        cell_dest.font = header_font
+        cell_dest.border = border
+        if cell_src.alignment and cell_src.alignment.horizontal:
+            cell_dest.alignment = Alignment(
+                horizontal=cell_src.alignment.horizontal,
+                vertical=cell_src.alignment.vertical or 'center',
+                wrap_text=bool(cell_src.alignment.wrap_text)
+            )
+        else:
+            cell_dest.alignment = _CENTER
+        
+    # 3. Write passed student rows
+    curr_dest_row = h_row + 1
+    for passed_idx, (_, row) in enumerate(passed_df.iterrows()):
+        ws_passed.row_dimensions[curr_dest_row].height = 20.1
+        
+        for c in range(1, max_col + 1):
+            col_name = source_ws.cell(row=h_row, column=c).value
+            cell_dest = ws_passed.cell(row=curr_dest_row, column=c)
+            cell_dest.border = border
+            cell_dest.font = body_font
+            
+            # S.No column
+            if c == 1 or (col_name and str(col_name).strip().lower() in ('sl. no', 'sl no', 's.no', 's.no.', 'serial no')):
+                cell_dest.value = passed_idx + 1
+                cell_dest.alignment = _CENTER
+            elif col_name and str(col_name).strip() in df_result.columns:
+                val = row[str(col_name).strip()]
+                if isinstance(val, float) and val.is_integer():
+                    val = int(val)
+                cell_dest.value = val
+                if isinstance(val, (int, float)):
+                    cell_dest.alignment = _CENTER
+                else:
+                    cell_dest.alignment = _LEFT
+            else:
+                cell_dest.value = ""
+                cell_dest.alignment = _CENTER
+        curr_dest_row += 1
+        
+    # 4. Summary row at bottom of passed sheet
+    ws_passed.row_dimensions[curr_dest_row].height = 26.0
+    total_count = len(df_result)
+    passed_count = len(passed_df)
+    pct = round(passed_count / total_count * 100, 1) if total_count > 0 else 0.0
+    summary_text = f"Total Passed Students: {passed_count} of {total_count} ({pct}%) | Excluded: Failed (< 50) and Absent (AA)"
+    
+    ws_passed.merge_cells(start_row=curr_dest_row, start_column=1, end_row=curr_dest_row, end_column=max_col)
+    sum_cell = ws_passed.cell(row=curr_dest_row, column=1, value=summary_text)
+    sum_cell.font = bold_font
+    sum_cell.alignment = _CENTER
+    sum_cell.border = border
+    for c in range(1, max_col + 1):
+        ws_passed.cell(row=curr_dest_row, column=c).border = border
+        
+    # 5. Set column widths from source sheet
+    for c in range(1, max_col + 1):
+        col_letter = get_column_letter(c)
+        ws_passed.column_dimensions[col_letter].width = source_ws.column_dimensions[col_letter].width or 14.0
+
+
 # ------------------------------------------------------------------ #
 # Public API
 # ------------------------------------------------------------------ #
@@ -937,6 +1081,11 @@ def generate_report(
 
         _append_per_column_analysis(
             ws, stats['per_column_stats'],
+            header_row_1based=header_row_idx + 1
+        )
+
+        _append_passed_students_sheet(
+            wb, ws, df_result, valid_marks,
             header_row_1based=header_row_idx + 1
         )
 

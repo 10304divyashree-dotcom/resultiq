@@ -24,3 +24,6 @@ uploads/
 reports/
 *.db
 resultiq.db
+
+# Temporary Office lock files
+~$*

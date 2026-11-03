@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ResultIQ — Complete Module Guide</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm 14mm 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 10.5pt; line-height: 1.65; color: #1e293b;
+    margin: 0; padding: 0 6px;
+  }
+
+  /* ---- Cover / Title ---- */
+  .cover {
+    text-align: center; padding: 60px 20px 36px;
+    border-bottom: 3px solid #2563eb; margin-bottom: 28px;
+  }
+  .cover h1 { font-size: 30pt; color: #0f172a; margin: 0 0 6px; }
+  .cover .subtitle { font-size: 13pt; color: #475569; margin: 4px 0 0; }
+  .cover .version { font-size: 9pt; color: #94a3b8; margin-top: 14px; }
+
+  /* ---- Headings ---- */
+  h1 { font-size: 20pt; color: #0f172a; border-bottom: 2px solid #2563eb;
+       padding-bottom: 6px; margin: 32px 0 14px; }
+  h2 { font-size: 14pt; color: #1e3a8a; border-bottom: 1px solid #e2e8f0;
+       padding-bottom: 5px; margin: 26px 0 10px; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; color: #1e40af; margin: 16px 0 8px;
+       page-break-after: avoid; }
+
+  /* ---- Callout boxes ---- */
+  .note, .important, .tip {
+    border-left: 4px solid; border-radius: 5px;
+    padding: 10px 14px; margin: 12px 0; font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  .note       { border-color: #3b82f6; background: #eff6ff; color: #1e3a8a; }
+  .important  { border-color: #7c3aed; background: #f5f3ff; color: #4c1d95; }
+  .tip        { border-color: #10b981; background: #ecfdf5; color: #065f46; }
+
+  /* ---- Tables ---- */
+  table {
+    border-collapse: collapse; width: 100%;
+    margin: 10px 0 14px; font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+  tr:nth-child(even) { background: #f8fafc; }
+
+  /* ---- Code ---- */
+  code {
+    font-family: Consolas, 'Courier New', monospace; font-size: 9pt;
+    background: #f1f5f9; color: #b91c1c; padding: 1px 5px; border-radius: 3px;
+  }
+  pre {
+    background: #0f172a; color: #e2e8f0; padding: 12px 14px;
+    border-radius: 6px; font-size: 8.5pt; overflow-x: auto;
+    page-break-inside: avoid;
+  }
+  pre code { background: transparent; color: inherit; padding: 0; }
+
+  /* ---- Diagram boxes ---- */
+  .diagram {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+    padding: 16px; margin: 14px 0; page-break-inside: avoid;
+  }
+  .diagram-title {
+    font-weight: 700; font-size: 9pt; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .flow .box {
+    background: #dbeafe; border: 1.5px solid #3b82f6; border-radius: 8px;
+    padding: 7px 12px; font-size: 9pt; font-weight: 600; color: #1e3a8a;
+    text-align: center; min-width: 90px;
+  }
+  .flow .box.green  { background: #dcfce7; border-color: #22c55e; color: #166534; }
+  .flow .box.purple { background: #f3e8ff; border-color: #a855f7; color: #6b21a8; }
+  .flow .box.orange { background: #ffedd5; border-color: #f97316; color: #9a3412; }
+  .flow .box.red    { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+  .flow .box.gray   { background: #f1f5f9; border-color: #94a3b8; color: #475569; }
+  .flow .arrow { font-size: 14pt; color: #94a3b8; font-weight: 700; }
+
+  /* ---- ER-style boxes ---- */
+  .er-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .er-box {
+    border: 2px solid #3b82f6; border-radius: 8px; overflow: hidden;
+    page-break-inside: avoid;
+  }
+  .er-box .er-title {
+    background: #2563eb; color: #fff; font-weight: 700; padding: 6px 10px;
+    font-size: 10pt; text-align: center;
+  }
+  .er-box ul {
+    list-style: none; margin: 0; padding: 8px 12px; font-size: 8.5pt;
+  }
+  .er-box li { padding: 2px 0; border-bottom: 1px solid #f1f5f9; }
+  .er-box li:last-child { border-bottom: none; }
+  .er-box .pk { color: #dc2626; font-weight: 600; }
+  .er-box .fk { color: #7c3aed; font-style: italic; }
+
+  /* ---- Pipeline steps ---- */
+  .pipeline {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0; margin: 12px 0;
+  }
+  .pipeline .step {
+    text-align: center; padding: 10px 6px; font-size: 8.5pt;
+    border: 1px solid #e2e8f0; position: relative;
+  }
+  .pipeline .step .num {
+    display: inline-block; background: #2563eb; color: #fff;
+    width: 22px; height: 22px; line-height: 22px; border-radius: 50%;
+    font-size: 8pt; font-weight: 700; margin-bottom: 4px;
+  }
+  .pipeline .step .label { display: block; font-weight: 600; color: #1e3a8a; }
+  .pipeline .step .desc  { display: block; color: #64748b; font-size: 7.5pt; margin-top: 2px; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+  ul, ol { padding-left: 20px; margin: 6px 0; }
+  li { margin-bottom: 3px; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- COVER -->
+<!-- ============================================================ -->
+<div class="cover">
+  <h1 style="border:none; margin:0; padding:0;">📊 ResultIQ</h1>
+  <div class="subtitle">Complete Module Guide</div>
+  <div class="version">Intelligent Excel Mark-Sheet Analysis &amp; Report Generation Platform</div>
+</div>
+
+<div class="note">
+  <strong>What is ResultIQ?</strong> — A Flask web application that lets teachers upload Excel mark sheets,
+  automatically detect which columns contain student marks, and generate professional
+  result-analysis reports — all without writing a single formula.
+</div>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE -->
+<!-- ============================================================ -->
+<h1>High-Level Architecture</h1>
+
+<div class="diagram">
+  <div class="diagram-title">System Architecture</div>
+  <div class="flow">
+    <div class="box gray">🌐 Browser</div>
+    <div class="arrow">→</div>
+    <div class="box">app.py<br><small>Flask Factory</small></div>
+    <div class="arrow">→</div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div class="box green">routes/auth.py<br><small>Module 3</small></div>
+      <div class="box green">routes/upload.py<br><small>Module 4</small></div>
+      <div class="box green">routes/analyse.py<br><small>Module 5</small></div>
+      <div class="box green">routes/report.py<br><small>Module 6</small></div>
+    </div>
+    <div class="arrow">→</div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div class="box purple">services/analyser.py<br><small>Module 5 Engine</small></div>
+      <div class="box purple">services/reporter.py<br><small>Module 6 Engine</small></div>
+    </div>
+  </div>
+  <div style="display:flex; justify-content:center; gap:30px; margin-top:12px;">
+    <div class="box orange">models.py<br><small>Module 2</small></div>
+    <div class="box orange">config.py<br><small>Module 1</small></div>
+    <div class="box gray">📁 resultiq.db</div>
+    <div class="box gray">📁 uploads/</div>
+    <div class="box gray">📁 reports/</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE 1 -->
+<!-- ============================================================ -->
+<h1>Module 1 — <code>config.py</code> (Application Configuration)</h1>
+
+<p><strong>Purpose:</strong> Central place for all configuration settings — no magic strings scattered across files.</p>
+
+<table>
+  <tr><th>Setting</th><th>Details</th></tr>
+  <tr><td>Secret Key</td><td>For session signing — reads <code>SECRET_KEY</code> env var, falls back to a dev default</td></tr>
+  <tr><td>Session Lifetime</td><td>30-day persistent sessions so users stay logged in</td></tr>
+  <tr><td>Upload &amp; Report Folders</td><td><code>uploads/</code> and <code>reports/</code> directories, auto-created at startup</td></tr>
+  <tr><td>Max Upload Size</td><td>16 MB cap to prevent oversized files</td></tr>
+  <tr><td>Database URI</td><td>SQLite file <code>resultiq.db</code> (or <code>DATABASE_URL</code> env var for production)</td></tr>
+  <tr><td>Config Profiles</td><td><code>DevelopmentConfig</code> (debug on), <code>TestingConfig</code> (separate test DB), <code>ProductionConfig</code></td></tr>
+</table>
+
+<p><strong>Key takeaway:</strong> You pick a profile name (<code>'development'</code>, <code>'testing'</code>, <code>'production'</code>) and the app loads the matching settings automatically.</p>
+
+<!-- ============================================================ -->
+<!-- MODULE 2 -->
+<!-- ============================================================ -->
+<h1>Module 2 — <code>models.py</code> (Database Models)</h1>
+
+<p><strong>Purpose:</strong> Defines the four SQLAlchemy ORM tables that store <em>everything</em> the app needs to remember.</p>
+
+<div class="diagram">
+  <div class="diagram-title">Entity Relationship Diagram</div>
+  <div class="er-grid">
+    <div class="er-box">
+      <div class="er-title">👤 User</div>
+      <ul>
+        <li><span class="pk">🔑 id</span> (UUID, primary key)</li>
+        <li>name, email (unique), username (unique)</li>
+        <li>password_hash (Werkzeug hashed)</li>
+        <li>department, designation</li>
+        <li>is_active, created_at, updated_at</li>
+        <li><em>→ has many: UploadedFile, Report, ActivityLog</em></li>
+      </ul>
+    </div>
+    <div class="er-box">
+      <div class="er-title">📄 UploadedFile</div>
+      <ul>
+        <li><span class="pk">🔑 id</span> (UUID, primary key)</li>
+        <li><span class="fk">🔗 user_id → User</span></li>
+        <li>original_filename, stored_filename (unique)</li>
+        <li>file_size, file_path</li>
+        <li>is_valid, validation_errors</li>
+        <li><strong>worksheets</strong> (JSON — full column metadata)</li>
+        <li><em>→ has many: Report</em></li>
+      </ul>
+    </div>
+    <div class="er-box">
+      <div class="er-title">📊 Report</div>
+      <ul>
+        <li><span class="pk">🔑 id</span> (UUID, primary key)</li>
+        <li><span class="fk">🔗 user_id → User</span></li>
+        <li><span class="fk">🔗 uploaded_file_id → UploadedFile</span></li>
+        <li>report_name, sheet_name</li>
+        <li>requested_columns (JSON), report_path</li>
+        <li>status: pending → processing → completed/failed</li>
+        <li><strong>analysis_trace</strong> (JSON — pass/fail stats)</li>
+      </ul>
+    </div>
+    <div class="er-box">
+      <div class="er-title">📝 ActivityLog</div>
+      <ul>
+        <li><span class="pk">🔑 id</span> (UUID, primary key)</li>
+        <li><span class="fk">🔗 user_id → User</span></li>
+        <li>activity_type (FILE_UPLOADED, FILE_ANALYSED, REPORT_GENERATED)</li>
+        <li>description, timestamp</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE: APP.PY -->
+<!-- ============================================================ -->
+<h1>Application Factory — <code>app.py</code> (Wiring Module)</h1>
+
+<p><strong>Purpose:</strong> The entry point that wires everything together using Flask's application factory pattern.</p>
+
+<h3>What it does step by step:</h3>
+<ol>
+  <li>Creates a <code>Flask</code> app and loads config from <code>config.py</code></li>
+  <li>Creates <code>uploads/</code> and <code>reports/</code> directories if missing</li>
+  <li>Initialises <strong>SQLAlchemy</strong> (database ORM) and <strong>Flask-Login</strong> (session auth)</li>
+  <li>Registers the <code>user_loader</code> callback so Flask-Login can look up users by ID</li>
+  <li>Adds a custom Jinja2 <code>enumerate</code> filter for templates</li>
+  <li>Imports and registers <strong>4 Blueprints</strong>: <code>auth_bp</code>, <code>upload_bp</code>, <code>analyse_bp</code>, <code>report_bp</code></li>
+  <li>Defines the root route <code>/</code> → renders <code>index.html</code> (landing page)</li>
+  <li>Registers error handlers for <strong>404</strong> (Not Found) and <strong>500</strong> (Server Error)</li>
+  <li>When run directly (<code>python app.py</code>), creates all DB tables and starts the dev server</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- MODULE 3 -->
+<!-- ============================================================ -->
+<h1>Module 3 — <code>routes/auth.py</code> (Authentication)</h1>
+
+<p><strong>Purpose:</strong> Handles user registration, login, logout, and the dashboard.</p>
+
+<table>
+  <tr><th>Route</th><th>Method</th><th>What it does</th></tr>
+  <tr>
+    <td><code>/register</code></td><td>GET / POST</td>
+    <td>Shows registration form. On POST: validates all fields, enforces <strong>strong password rules</strong>
+    (≥8 chars, uppercase, lowercase, digit, special char, no spaces), checks for duplicate
+    email/username, creates the user.</td>
+  </tr>
+  <tr>
+    <td><code>/login</code></td><td>GET / POST</td>
+    <td>Shows login form. Accepts <strong>email or username</strong>. Strips accidental trailing spaces
+    from passwords. Sets a 30-day persistent session. Redirects to <code>?next=</code> URL if present.</td>
+  </tr>
+  <tr>
+    <td><code>/logout</code></td><td>GET</td>
+    <td>Clears session, logs out, redirects to home.</td>
+  </tr>
+  <tr>
+    <td><code>/dashboard</code></td><td>GET</td>
+    <td>Shows the user's dashboard with their <strong>5 most recent reports</strong>.</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <strong>Security:</strong> Passwords are stored as Werkzeug-hashed values (never plaintext).
+  Login gives distinct error messages for "account not found" vs "wrong password".
+  All routes except <code>/register</code> and <code>/login</code> require <code>@login_required</code>.
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE 4 -->
+<!-- ============================================================ -->
+<h1>Module 4 — <code>routes/upload.py</code> (File Upload &amp; Inspection)</h1>
+
+<p><strong>Purpose:</strong> Lets users upload <code>.xlsx</code> / <code>.xls</code> mark sheets and immediately inspects their structure.</p>
+
+<table>
+  <tr><th>Route</th><th>Method</th><th>What it does</th></tr>
+  <tr><td><code>/upload</code></td><td>GET</td><td>Shows upload form + list of 5 recently uploaded files</td></tr>
+  <tr><td><code>/upload</code></td><td>POST</td><td>Receives the Excel file, validates, saves, inspects, stores metadata</td></tr>
+  <tr><td><code>/upload/inspect/&lt;file_id&gt;</code></td><td>GET</td><td>Displays the inspection results (sheets, columns, data types, samples)</td></tr>
+</table>
+
+<h3>Upload Pipeline (POST)</h3>
+<div class="diagram">
+  <div class="diagram-title">Upload Validation &amp; Processing Flow</div>
+  <div class="pipeline">
+    <div class="step" style="background:#eff6ff;">
+      <span class="num">1</span>
+      <span class="label">File Present?</span>
+      <span class="desc">Check form has a file</span>
+    </div>
+    <div class="step" style="background:#eff6ff;">
+      <span class="num">2</span>
+      <span class="label">Extension OK?</span>
+      <span class="desc">Only .xlsx / .xls</span>
+    </div>
+    <div class="step" style="background:#eff6ff;">
+      <span class="num">3</span>
+      <span class="label">Size ≤ 16 MB?</span>
+      <span class="desc">Enforce upload limit</span>
+    </div>
+    <div class="step" style="background:#f5f3ff;">
+      <span class="num">4</span>
+      <span class="label">.xls → .xlsx</span>
+      <span class="desc">Auto-convert legacy</span>
+    </div>
+    <div class="step" style="background:#f5f3ff;">
+      <span class="num">5</span>
+      <span class="label">Save with UUID</span>
+      <span class="desc">Secure filename</span>
+    </div>
+    <div class="step" style="background:#dcfce7;">
+      <span class="num">6</span>
+      <span class="label">Inspect Workbook</span>
+      <span class="desc">Read sheets, columns, types</span>
+    </div>
+    <div class="step" style="background:#dcfce7;">
+      <span class="num">7</span>
+      <span class="label">Save to DB</span>
+      <span class="desc">UploadedFile + ActivityLog</span>
+    </div>
+    <div class="step" style="background:#fef3c7;">
+      <span class="num">8</span>
+      <span class="label">Redirect</span>
+      <span class="desc">→ /upload/inspect</span>
+    </div>
+  </div>
+</div>
+
+<h3><code>inspect_workbook()</code> function</h3>
+<ul>
+  <li>Opens the Excel file with pandas (<code>openpyxl</code> for <code>.xlsx</code>, <code>xlrd</code> for <code>.xls</code>)</li>
+  <li>For each worksheet: reads columns, infers data types (Integer, Decimal, Text, Date/Time, Boolean), grabs 3 sample values</li>
+  <li>Skips unnamed/empty columns</li>
+  <li>Returns a clean JSON structure stored in <code>UploadedFile.worksheets</code></li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- MODULE 5 -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h1>Module 5 — <code>services/analyser.py</code> (Intelligent Column Classifier)</h1>
+
+<div class="important">
+  <strong>This is the brain of ResultIQ.</strong> It automatically classifies every column as one of:
+  <code>marks</code>, <code>identity</code>, <code>metadata</code>, <code>category</code>, <code>empty</code>, or <code>text</code>.
+  <br><br>
+  <strong>Zero Flask imports</strong> — pure Python + pandas, making it independently testable.
+</div>
+
+<h3>Classification Logic — <code>classify_column()</code></h3>
+<p>The classifier uses a <strong>13-step decision cascade</strong>:</p>
+
+<table>
+  <tr><th>Step</th><th>Check</th><th>Result</th><th>Example Columns Caught</th></tr>
+  <tr><td>1</td><td>Datetime type or name</td><td><code>metadata</code></td><td>DOB, Timestamp</td></tr>
+  <tr><td>2</td><td>Identity name patterns (regex)</td><td><code>identity</code></td><td>Sl. No, Roll No, USN, Student Name, Email, Aadhaar</td></tr>
+  <tr><td>3</td><td>Excluded summary columns (regex)</td><td><code>metadata</code> / <code>category</code></td><td>Total Marks, Percentage, CGPA, Rank, Grade, Attendance, Result</td></tr>
+  <tr><td>4</td><td>Unnamed columns</td><td><code>metadata</code></td><td>Unnamed: 0 (from multi-row headers)</td></tr>
+  <tr><td>5</td><td>Long names (&gt;40 chars)</td><td><code>metadata</code></td><td>Free-form description columns</td></tr>
+  <tr><td>6</td><td>Nearly empty (&lt;5% filled)</td><td><code>empty</code></td><td>Placeholder columns</td></tr>
+  <tr><td>7</td><td>Large numbers (median &gt;999)</td><td><code>identity</code></td><td>Registration numbers, phone numbers</td></tr>
+  <tr><td>8</td><td>Rating / Likert guard</td><td><code>metadata</code></td><td>Survey ratings 1–5, year columns</td></tr>
+  <tr><td>9</td><td>Subject name match + numeric data</td><td><code>marks</code></td><td>Mathematics, Physics, 24CS301, CIT-1, Quiz-2</td></tr>
+  <tr><td>10</td><td>Content-driven: ≥50% numeric, ≥75% coverage, median ≤200</td><td><code>marks</code></td><td>Unnamed but clearly numeric score columns</td></tr>
+  <tr><td>11</td><td>High uniqueness non-numeric</td><td><code>identity</code></td><td>Student IDs with unique text</td></tr>
+  <tr><td>12</td><td>Low cardinality text</td><td><code>category</code></td><td>Section (A/B/C), Gender</td></tr>
+  <tr><td>13</td><td>Default fallback</td><td><code>text</code></td><td>Everything else</td></tr>
+</table>
+
+<h3>Header Detection — <code>_detect_header_row()</code></h3>
+<ul>
+  <li>Scans first 35 rows, scores each candidate based on keyword matches (<code>Name</code>, <code>Roll No</code>, <code>Marks</code>, subject codes) and whether the next row has data</li>
+  <li>Picks the highest-scoring row as the real header — handles messy sheets with title rows, blank rows, or merged cells above the actual table</li>
+</ul>
+
+<h3>Quality Metrics — <code>_build_quality()</code></h3>
+<p>For every column, computes: total rows, filled count, missing count, numeric count, absent-token count, text count, unique values.</p>
+
+<h3>Route Layer — <code>routes/analyse.py</code></h3>
+<table>
+  <tr><th>Route</th><th>Method</th><th>What it does</th></tr>
+  <tr>
+    <td><code>/analyse/&lt;file_id&gt;</code></td><td>GET</td>
+    <td>Runs <code>analyse_workbook()</code> on the uploaded file, saves the enriched worksheets JSON back
+    to the DB, renders the results page with classification badges and a "Generate Report" button.</td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- MODULE 6 -->
+<!-- ============================================================ -->
+<h1>Module 6 — <code>services/reporter.py</code> (Report Generation Engine)</h1>
+
+<div class="important">
+  <strong>Zero Flask imports</strong> — pure Python + pandas + openpyxl. Fully testable in isolation.
+</div>
+
+<h3>What <code>generate_report()</code> does</h3>
+<div class="diagram">
+  <div class="diagram-title">Report Generation Pipeline</div>
+  <div class="pipeline">
+    <div class="step" style="background:#eff6ff;">
+      <span class="num">1</span>
+      <span class="label">Read Marks Cols</span>
+      <span class="desc">From classification JSON</span>
+    </div>
+    <div class="step" style="background:#eff6ff;">
+      <span class="num">2</span>
+      <span class="label">Read Source Excel</span>
+      <span class="desc">Using detected header row</span>
+    </div>
+    <div class="step" style="background:#f5f3ff;">
+      <span class="num">3</span>
+      <span class="label">Fix Headers</span>
+      <span class="desc">Multi-row / Unnamed cols</span>
+    </div>
+    <div class="step" style="background:#f5f3ff;">
+      <span class="num">4</span>
+      <span class="label">Filter Rows</span>
+      <span class="desc">Skip footers, signatures</span>
+    </div>
+    <div class="step" style="background:#dcfce7;">
+      <span class="num">5</span>
+      <span class="label">Compute Results</span>
+      <span class="desc">Total, Avg, %, Pass/Fail</span>
+    </div>
+    <div class="step" style="background:#dcfce7;">
+      <span class="num">6</span>
+      <span class="label">Build Stats</span>
+      <span class="desc">Summary statistics</span>
+    </div>
+    <div class="step" style="background:#fef3c7;">
+      <span class="num">7</span>
+      <span class="label">Clone Workbook</span>
+      <span class="desc">Preserve source layout</span>
+    </div>
+    <div class="step" style="background:#fef3c7;">
+      <span class="num">8</span>
+      <span class="label">Append Analysis</span>
+      <span class="desc">Formulas + styling</span>
+    </div>
+  </div>
+</div>
+
+<h3>Computed Columns Added Per Student</h3>
+<table>
+  <tr><th>Column</th><th>Formula / Logic</th></tr>
+  <tr><td><strong>Total Marks</strong></td><td>Sum of all marks (absent → 0)</td></tr>
+  <tr><td><strong>Subjects Appeared</strong></td><td>Count of subjects with a valid mark</td></tr>
+  <tr><td><strong>Average</strong></td><td>Mean of appeared subjects' marks</td></tr>
+  <tr><td><strong>Percentage</strong></td><td>(Total / max possible) × 100</td></tr>
+  <tr><td><strong>Result</strong></td><td><strong>PASS</strong> if overall ≥40% AND every subject ≥50%; else <strong>FAIL</strong></td></tr>
+</table>
+
+<h3>Per-Subject Analysis Block (Appended Below Student Data)</h3>
+<table>
+  <tr><th>Row Label</th><th>What It Shows</th></tr>
+  <tr><td>appeared</td><td>Students who took this subject</td></tr>
+  <tr><td>passed</td><td>Students who scored ≥50 in this subject</td></tr>
+  <tr><td>% passed</td><td>Pass percentage for the subject</td></tr>
+  <tr><td>below 50%</td><td>Count in score bracket</td></tr>
+  <tr><td>50%–60%</td><td>Count in score bracket</td></tr>
+  <tr><td>61%–70%</td><td>Count in score bracket</td></tr>
+  <tr><td>71%–80%</td><td>Count in score bracket</td></tr>
+  <tr><td>81%–90%</td><td>Count in score bracket</td></tr>
+  <tr><td>91%–100%</td><td>Count in score bracket</td></tr>
+</table>
+
+<h3>Excel Styling Features</h3>
+<ul>
+  <li>Grey header row with bold Arial font and thick borders</li>
+  <li><span style="background:#FFC7CE;color:#9C0006;padding:2px 6px;border-radius:3px;font-size:9pt;">Red highlight</span> for marks &lt; 50 (fail)</li>
+  <li><span style="background:#7F7F7F;color:#000;padding:2px 6px;border-radius:3px;font-size:9pt;font-weight:bold;">Grey highlight</span> for absent students (AA, Abs, etc.)</li>
+  <li>Native Excel conditional formatting rules</li>
+  <li>Auto-sized column widths (names wider, marks centered)</li>
+  <li>Monkeypatched openpyxl writer to output cached formula values in <code>&lt;v&gt;</code> tags</li>
+</ul>
+
+<h3>Absent Token Recognition (20+ markers)</h3>
+<p><code>AA</code>, <code>Ab</code>, <code>Abs</code>, <code>Absent</code>, <code>NA</code>, <code>N/A</code>, <code>-</code>, <code>--</code>, <code>Nil</code>, <code>None</code>, <code>Withheld</code>, <code>Medical</code>, <code>Detained</code>, <code>Exempted</code>, <code>OD</code>, <code>On Duty</code>, <code>Leave</code>, and more.</p>
+
+<h3>Route Layer — <code>routes/report.py</code></h3>
+<table>
+  <tr><th>Route</th><th>Method</th><th>What it does</th></tr>
+  <tr>
+    <td><code>/report/generate</code></td><td>POST</td>
+    <td>Validates inputs, creates a Report record (status=<code>processing</code>), calls <code>generate_report()</code>, updates status to <code>completed</code> or <code>failed</code>, redirects to preview</td>
+  </tr>
+  <tr>
+    <td><code>/report/&lt;id&gt;</code></td><td>GET</td>
+    <td>Reads the generated <code>.xlsx</code>, displays a data table preview with summary stats in the browser</td>
+  </tr>
+  <tr>
+    <td><code>/report/&lt;id&gt;/download</code></td><td>GET</td>
+    <td>Streams the <code>.xlsx</code> file as a download, records the download timestamp</td>
+  </tr>
+  <tr>
+    <td><code>/reports</code></td><td>GET</td>
+    <td>Lists all reports for the current user, ordered by most recent first</td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- TEMPLATES -->
+<!-- ============================================================ -->
+<h1>Templates &amp; Static Assets</h1>
+
+<table>
+  <tr><th>Path</th><th>Purpose</th></tr>
+  <tr><td><code>templates/base.html</code></td><td>Base layout with navigation bar, flash messages, Bootstrap CSS/JS</td></tr>
+  <tr><td><code>templates/index.html</code></td><td>Landing / home page</td></tr>
+  <tr><td><code>templates/dashboard.html</code></td><td>User dashboard with recent reports</td></tr>
+  <tr><td><code>templates/auth/login.html</code></td><td>Login form (email or username)</td></tr>
+  <tr><td><code>templates/auth/register.html</code></td><td>Registration form with password strength rules</td></tr>
+  <tr><td><code>templates/upload/index.html</code></td><td>File upload form + recent uploads list</td></tr>
+  <tr><td><code>templates/upload/inspect.html</code></td><td>Workbook inspection results (sheets, columns, samples)</td></tr>
+  <tr><td><code>templates/analyse/results.html</code></td><td>Column classification results + Generate Report button</td></tr>
+  <tr><td><code>templates/report/preview.html</code></td><td>Report preview with stats + data table + download button</td></tr>
+  <tr><td><code>templates/report/history.html</code></td><td>All past reports for the user</td></tr>
+  <tr><td><code>templates/404.html</code></td><td>Not Found error page</td></tr>
+  <tr><td><code>templates/500.html</code></td><td>Internal Server Error page</td></tr>
+  <tr><td><code>static/css/style.css</code></td><td>Custom CSS styles</td></tr>
+  <tr><td><code>static/js/main.js</code></td><td>Minimal JS foundation</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- USER FLOW -->
+<!-- ============================================================ -->
+<h1>End-to-End User Flow</h1>
+
+<div class="diagram">
+  <div class="diagram-title">Complete User Journey</div>
+  <div class="flow" style="gap:8px;">
+    <div class="box green">👤 Register / Login<br><small>Module 3</small></div>
+    <div class="arrow">→</div>
+    <div class="box">📤 Upload Excel<br><small>Module 4</small></div>
+    <div class="arrow">→</div>
+    <div class="box">🔍 Inspect Workbook<br><small>Module 4</small></div>
+    <div class="arrow">→</div>
+    <div class="box purple">🧠 Analyse Columns<br><small>Module 5</small></div>
+    <div class="arrow">→</div>
+    <div class="box orange">📊 Generate Report<br><small>Module 6</small></div>
+    <div class="arrow">→</div>
+    <div class="box green">👁️ Preview &amp; ⬇️ Download<br><small>Module 6</small></div>
+  </div>
+</div>
+
+<ol>
+  <li><strong>Register / Login</strong> — Create an account or sign in with email/username</li>
+  <li><strong>Upload</strong> — Drop an <code>.xlsx</code> / <code>.xls</code> mark sheet (auto-converts legacy format)</li>
+  <li><strong>Inspect</strong> — See all sheets, columns, data types, and sample values at a glance</li>
+  <li><strong>Analyse</strong> — Intelligent classifier tags each column (marks / identity / metadata / category) using 13-step logic</li>
+  <li><strong>Generate</strong> — Engine computes Total, Average, Percentage, Pass/Fail per student + per-subject analysis</li>
+  <li><strong>Preview &amp; Download</strong> — See the full results table in-browser, then download a professionally styled Excel file</li>
+</ol>
+
+<!-- ============================================================ -->
+<!-- TECH STACK -->
+<!-- ============================================================ -->
+<h1>Tech Stack</h1>
+
+<table>
+  <tr><th>Layer</th><th>Technology</th></tr>
+  <tr><td>Backend Framework</td><td><strong>Flask 3.0</strong> (Python)</td></tr>
+  <tr><td>Database</td><td><strong>SQLite</strong> via Flask-SQLAlchemy</td></tr>
+  <tr><td>Authentication</td><td><strong>Flask-Login</strong> + Werkzeug password hashing</td></tr>
+  <tr><td>Excel Reading</td><td><strong>pandas</strong> + <strong>openpyxl</strong> (.xlsx) + <strong>xlrd</strong> (.xls)</td></tr>
+  <tr><td>Excel Writing</td><td><strong>openpyxl</strong> with custom monkeypatched writer for formula caching</td></tr>
+  <tr><td>Frontend</td><td>Jinja2 templates + Bootstrap + minimal custom CSS/JS</td></tr>
+  <tr><td>Configuration</td><td>Python config classes + environment variables</td></tr>
+</table>
+
+</body>
+</html>
