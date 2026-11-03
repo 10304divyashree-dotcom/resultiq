@@ -5,3 +5,4 @@ Flask-Login
 pandas
 openpyxl
 xlrd
+gunicorn
