@@ -503,6 +503,46 @@ class TestGenerateReportPerColumn(unittest.TestCase):
         self.assertIn('Exam-A', stats['per_column_stats'])
         self.assertIn('Exam-B', stats['per_column_stats'])
 
+    def test_per_column_all_8_metrics_present(self):
+        """Each column in per_column_stats must have all 8 metrics calculated independently."""
+        src = self._write_xlsx({
+            'Scores': [
+                ('Name', 'Subj1', 'Subj2'),
+                ('Alice', 90, 40),
+                ('Bob',   80, 'AA'),
+                ('Charlie', 70, 60),
+            ]
+        })
+        stats = generate_report(src, self._ws_json('Scores', ['Subj1', 'Subj2'], ['Name']),
+                                'Scores', self._out_path())
+        pc = stats['per_column_stats']
+        for col_name in ['Subj1', 'Subj2']:
+            self.assertIn(col_name, pc)
+            c = pc[col_name]
+            for key in ['total_students', 'pass_count', 'fail_count', 'absent',
+                        'pass_rate', 'avg_percentage', 'highest_pct', 'lowest_pct']:
+                self.assertIn(key, c, f"Missing key {key} in column {col_name}")
+
+        # Subj1: 3 students, 3 appeared, 0 absent, 3 passed, 0 failed
+        self.assertEqual(pc['Subj1']['total_students'], 3)
+        self.assertEqual(pc['Subj1']['pass_count'], 3)
+        self.assertEqual(pc['Subj1']['fail_count'], 0)
+        self.assertEqual(pc['Subj1']['absent'], 0)
+        self.assertEqual(pc['Subj1']['avg_percentage'], 80.0)
+        self.assertEqual(pc['Subj1']['highest_pct'], 90.0)
+        self.assertEqual(pc['Subj1']['lowest_pct'], 70.0)
+
+        # Subj2: 3 students, 2 appeared, 1 absent ('AA')
+        # 1 passed (60), 1 failed (40)
+        self.assertEqual(pc['Subj2']['total_students'], 3)
+        self.assertEqual(pc['Subj2']['appeared'], 2)
+        self.assertEqual(pc['Subj2']['absent'], 1)
+        self.assertEqual(pc['Subj2']['pass_count'], 1)
+        self.assertEqual(pc['Subj2']['fail_count'], 1)
+        self.assertEqual(pc['Subj2']['avg_percentage'], 50.0)
+        self.assertEqual(pc['Subj2']['highest_pct'], 60.0)
+        self.assertEqual(pc['Subj2']['lowest_pct'], 40.0)
+
     def test_each_col_stat_independent(self):
         """per_column_stats for col A must not be influenced by col B marks."""
         src = self._write_xlsx({
@@ -749,6 +789,10 @@ class TestReportRoutes(unittest.TestCase):
         self.assertEqual(report.analysis_trace['total_students'], 5)
         self.assertIn(b'Passed', resp2.data)
         self.assertIn(b'Failed', resp2.data)
+        self.assertIn(b'Assessment Performance by Subject', resp2.data)
+        self.assertIn(b'Sub1', resp2.data)
+        self.assertIn(b'Sub2', resp2.data)
+        self.assertIn(b'Sub3', resp2.data)
         print('[PASS] test_preview_shows_stats')
 
     def test_download_returns_xlsx(self):

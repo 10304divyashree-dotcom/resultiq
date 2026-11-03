@@ -64,7 +64,91 @@
 </div>
 
 {# ---- Summary stat cards ---- #}
-{% if stats %}
+{% if stats and stats.per_column_stats %}
+<div class="per-column-analysis-container" style="margin-top: 1.5rem; margin-bottom: 2rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.25rem;">
+    <div>
+      <h2 class="section-title" style="margin:0;">Assessment Performance by Subject</h2>
+      <p class="text-muted" style="margin:0.25rem 0 0 0; font-size:0.85rem;">
+        Independent statistical evaluation calculated for each analyzed assessment column.
+      </p>
+    </div>
+    <span class="badge badge-blue">{{ stats.per_column_stats|length }} Assessment{{ 's' if stats.per_column_stats|length != 1 }}</span>
+  </div>
+
+  {% for col_name, cstats in stats.per_column_stats.items() %}
+  <div class="card mb-4" style="border: 1px solid var(--color-border); border-radius: 14px; padding: 1.25rem 1.5rem; background: var(--color-surface); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
+    {# Card Header with Column Pill & Pass Rate #}
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--color-border-light); padding-bottom: 0.75rem; margin-bottom: 1.15rem;">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span class="cls-badge marks" style="font-size:0.95rem; font-weight:700; padding:0.35rem 0.85rem;">{{ col_name }}</span>
+        <span class="text-muted" style="font-size:0.82rem;">Passing mark: 50%</span>
+      </div>
+      <span class="badge badge-green" style="font-weight:700; font-size:0.85rem;">{{ cstats.pass_rate }}% Pass Rate (Appeared)</span>
+    </div>
+
+    {# 8 Metric Cards (Appearing ONLY ONCE) #}
+    <div class="stats-grid mb-3" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+      <div class="stat-card" style="padding: 0.85rem;">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value" style="font-size: 1.4rem;">{{ cstats.total_students }}</div>
+        <div class="stat-note">{{ cstats.appeared }} appeared · {{ cstats.absent }} absent</div>
+      </div>
+      <div class="stat-card stat-pass" style="padding: 0.85rem;">
+        <div class="stat-label">Passed</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: var(--color-success);">{{ cstats.pass_count }}</div>
+        <div class="stat-note">Scored &ge; 50 marks</div>
+      </div>
+      <div class="stat-card stat-fail" style="padding: 0.85rem;">
+        <div class="stat-label">Failed</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: var(--color-danger);">{{ cstats.fail_count }}</div>
+        <div class="stat-note">Scored &lt; 50 marks</div>
+      </div>
+      <div class="stat-card" style="padding: 0.85rem; border-top: 3px solid #64748B;">
+        <div class="stat-label">Absentees</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: #64748B;">{{ cstats.absent }}</div>
+        <div class="stat-note">Marked as AA</div>
+      </div>
+      <div class="stat-card" style="padding: 0.85rem; border-top: 3px solid var(--color-primary);">
+        <div class="stat-label">Pass Percentage</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: var(--color-primary);">{{ cstats.pass_rate }}%</div>
+        <div class="stat-note">{{ cstats.overall_pass_rate }}% of total</div>
+      </div>
+      <div class="stat-card stat-avg" style="padding: 0.85rem;">
+        <div class="stat-label">Average Percentage</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: #0F766E;">{{ cstats.avg_percentage }}%</div>
+        <div class="stat-note">Subject average</div>
+      </div>
+      <div class="stat-card stat-high" style="padding: 0.85rem;">
+        <div class="stat-label">Highest Percentage</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: #D97706;">{{ cstats.highest_pct }}%</div>
+        <div class="stat-note">Top score</div>
+      </div>
+      <div class="stat-card stat-low" style="padding: 0.85rem;">
+        <div class="stat-label">Lowest Percentage</div>
+        <div class="stat-value" style="font-size: 1.4rem; color: #DC2626;">{{ cstats.lowest_pct }}%</div>
+        <div class="stat-note">Needs attention</div>
+      </div>
+    </div>
+
+    {# Distribution bar #}
+    <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--color-text-muted); margin-bottom:0.35rem;">
+      <span>🟢 Pass: <strong style="color:var(--color-success);">{{ cstats.pass_count }}</strong> ({{ cstats.overall_pass_rate }}%)</span>
+      <span>🔴 Fail: <strong style="color:var(--color-danger);">{{ cstats.fail_count }}</strong></span>
+      <span>⚪ Absent: <strong>{{ cstats.absent }}</strong></span>
+    </div>
+    <div style="height:8px; background:var(--color-surface-2); border-radius:4px; overflow:hidden; display:flex;">
+      {% set p_pct = (cstats.pass_count / cstats.total_students * 100) if cstats.total_students > 0 else 0 %}
+      {% set f_pct = (cstats.fail_count / cstats.total_students * 100) if cstats.total_students > 0 else 0 %}
+      {% set a_pct = (cstats.absent / cstats.total_students * 100) if cstats.total_students > 0 else 0 %}
+      <div style="width:{{ p_pct }}%; background:#10B981;" title="Pass: {{ cstats.pass_count }}"></div>
+      <div style="width:{{ f_pct }}%; background:#EF4444;" title="Fail: {{ cstats.fail_count }}"></div>
+      <div style="width:{{ a_pct }}%; background:#94A3B8;" title="Absent: {{ cstats.absent }}"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% elif stats %}
 <div class="stats-grid">
 
   <div class="stat-card">

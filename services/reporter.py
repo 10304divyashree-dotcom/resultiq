@@ -658,15 +658,23 @@ def _compute_results_per_column(df: pd.DataFrame, marks_cols: list[str]) -> dict
         appeared = int(appeared_mask.sum())
         absent = total_students - appeared
         
+        valid_marks = num_col.dropna()
+        if len(valid_marks) > 0:
+            avg_pct = round(float(valid_marks.mean()), 2)
+            highest = round(float(valid_marks.max()), 2)
+            lowest  = round(float(valid_marks.min()), 2)
+        else:
+            avg_pct = 0.0
+            highest = 0.0
+            lowest  = 0.0
+        
         passes = 0
         fails = 0
         bins = {
             'below 50%': 0, '50%-60%': 0, '61%-70%': 0, '71%-80%': 0, '81%-90%': 0, '91%-100%': 0
         }
         
-        for val in num_col:
-            if pd.isna(val):
-                continue
+        for val in valid_marks:
             pct = (val / DEFAULT_MAX_PER_SUBJECT) * 100
             if pct >= PASS_SUBJECT_MIN:
                 passes += 1
@@ -697,6 +705,9 @@ def _compute_results_per_column(df: pd.DataFrame, marks_cols: list[str]) -> dict
             'fail_count': fails,
             'pass_rate': pass_rate,
             'overall_pass_rate': overall_pass_rate,
+            'avg_percentage': avg_pct,
+            'highest_pct': highest,
+            'lowest_pct': lowest,
             'bins': bins
         }
     return stats_by_col

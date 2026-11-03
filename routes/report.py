@@ -239,6 +239,56 @@ def preview(report_id: str):
 
     stats = report.analysis_trace or {}
 
+    # Backward compatibility: ensure per_column_stats is complete with all 8 metrics
+    if not read_error and 'df' in locals() and df is not None and not df.empty:
+        try:
+            col_stats = stats.get('per_column_stats', {})
+            needs_backfill = (
+                not col_stats or
+                any('avg_percentage' not in v for v in col_stats.values())
+            )
+            if needs_backfill:
+                marks_cols = [
+                    c for c in (stats.get('marks_columns') or table_cols)
+                    if c in df.columns and c not in ('Sl.No', 'S.No', 'Roll No', 'Name', 'Total Marks', 'Average', 'Percentage', 'Result', 'Subjects Appeared')
+                ]
+                if marks_cols:
+                    from services.reporter import _compute_results_per_column
+                    new_pcs = _compute_results_per_column(df, marks_cols)
+                    if not col_stats:
+                        stats['per_column_stats'] = new_pcs
+                    else:
+                        for k, v in new_pcs.items():
+                            if k in col_stats:
+                                col_stats[k].update(v)
+        except Exception as exc:
+            current_app.logger.warning(f'Could not backfill per-column stats: {exc}')
+
+    # Safe normalization: guarantee all keys exist for any legacy report
+    total_st = stats.get('total_students', 0)
+    for col_k, col_v in stats.get('per_column_stats', {}).items():
+        if isinstance(col_v, dict):
+            if 'total_students' not in col_v:
+                col_v['total_students'] = total_st
+            if 'appeared' not in col_v:
+                col_v['appeared'] = col_v['total_students']
+            if 'absent' not in col_v:
+                col_v['absent'] = max(0, col_v['total_students'] - col_v['appeared'])
+            if 'pass_count' not in col_v:
+                col_v['pass_count'] = 0
+            if 'fail_count' not in col_v:
+                col_v['fail_count'] = 0
+            if 'pass_rate' not in col_v:
+                col_v['pass_rate'] = round((col_v['pass_count'] / col_v['appeared'] * 100), 2) if col_v['appeared'] > 0 else 0.0
+            if 'overall_pass_rate' not in col_v:
+                col_v['overall_pass_rate'] = round((col_v['pass_count'] / col_v['total_students'] * 100), 2) if col_v['total_students'] > 0 else 0.0
+            if 'avg_percentage' not in col_v:
+                col_v['avg_percentage'] = stats.get('avg_percentage', 0.0)
+            if 'highest_pct' not in col_v:
+                col_v['highest_pct'] = stats.get('highest_pct', 0.0)
+            if 'lowest_pct' not in col_v:
+                col_v['lowest_pct'] = stats.get('lowest_pct', 0.0)
+
     return render_template(
         'report/preview.html',
         report=report,
