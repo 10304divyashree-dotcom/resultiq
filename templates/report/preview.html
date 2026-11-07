@@ -66,7 +66,7 @@
 {# ---- Summary stat cards ---- #}
 {% if stats and stats.per_column_stats %}
 <div class="per-column-analysis-container" style="margin-top: 1.5rem; margin-bottom: 2rem;">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.25rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom: 1.25rem;">
     <div>
       <h2 class="section-title" style="margin:0;">Assessment Performance by Subject</h2>
       <p class="text-muted" style="margin:0.25rem 0 0 0; font-size:0.85rem;">
@@ -79,8 +79,8 @@
   {% for col_name, cstats in stats.per_column_stats.items() %}
   <div class="card mb-4" style="border: 1px solid var(--color-border); border-radius: 14px; padding: 1.25rem 1.5rem; background: var(--color-surface); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
     {# Card Header with Column Pill & Pass Rate #}
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--color-border-light); padding-bottom: 0.75rem; margin-bottom: 1.15rem;">
-      <div style="display:flex; align-items:center; gap:0.75rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; border-bottom: 1px solid var(--color-border-light); padding-bottom: 0.75rem; margin-bottom: 1.15rem;">
+      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem 0.75rem;">
         <span class="cls-badge marks" style="font-size:0.95rem; font-weight:700; padding:0.35rem 0.85rem;">{{ col_name }}</span>
         <span class="text-muted" style="font-size:0.82rem;">Passing mark: 50%</span>
       </div>
@@ -132,7 +132,7 @@
     </div>
 
     {# Distribution bar #}
-    <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--color-text-muted); margin-bottom:0.35rem;">
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.25rem 0.5rem; font-size:0.75rem; color:var(--color-text-muted); margin-bottom:0.35rem;">
       <span>🟢 Pass: <strong style="color:var(--color-success);">{{ cstats.pass_count }}</strong> ({{ cstats.overall_pass_rate }}%)</span>
       <span>🔴 Fail: <strong style="color:var(--color-danger);">{{ cstats.fail_count }}</strong></span>
       <span>⚪ Absent: <strong>{{ cstats.absent }}</strong></span>

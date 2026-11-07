@@ -43,11 +43,13 @@
                     </td>
                     <td class="muted-cell">{{ r.generated_at.strftime('%d %b %Y, %H:%M') if r.generated_at else '-' }}</td>
                     <td class="muted-cell">{{ r.downloaded_at.strftime('%d %b %Y, %H:%M') if r.downloaded_at else 'Never' }}</td>
-                    <td style="display: flex; gap: 0.5rem;">
-                        <a href="{{ url_for('report.preview', report_id=r.id) }}" class="btn btn-sm btn-primary">Preview</a>
-                        {% if r.status == 'completed' %}
-                        <a href="{{ url_for('report.download', report_id=r.id) }}" class="btn btn-sm btn-outline">Download</a>
-                        {% endif %}
+                    <td>
+                        <div style="display: inline-flex; gap: 0.4rem; flex-wrap: nowrap;">
+                            <a href="{{ url_for('report.preview', report_id=r.id) }}" class="btn btn-sm btn-primary">Preview</a>
+                            {% if r.status == 'completed' %}
+                            <a href="{{ url_for('report.download', report_id=r.id) }}" class="btn btn-sm btn-outline">Download</a>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

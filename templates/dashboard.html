@@ -65,8 +65,8 @@
 </div>
 
 <div class="recent-reports" style="margin-top:3rem;">
-    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-        <h2 class="section-title">Recent Reports</h2>
+    <div class="d-flex justify-between align-center flex-wrap gap-1 mb-2">
+        <h2 class="section-title" style="margin:0;">Recent Reports</h2>
         <a href="{{ url_for('report.history') }}" class="btn btn-sm btn-outline">View All Reports →</a>
     </div>
     {% if recent_reports %}
